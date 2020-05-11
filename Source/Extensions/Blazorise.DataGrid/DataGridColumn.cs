@@ -26,10 +26,10 @@ namespace Blazorise.DataGrid
         public DataGridColumn()
         {
             // TODO: move this to cached FunctionCompiler so it doesn't get compiled every time
-            valueTypeGetter = new Lazy<Func<Type>>( () => FunctionCompiler.CreateValueTypeGetter<TItem>( Field ) );
-            defaultValueByType = new Lazy<Func<object>>( () => FunctionCompiler.CreateDefaultValueByType<TItem>( Field ) );
-            valueGetter = new Lazy<Func<TItem, object>>( () => FunctionCompiler.CreateValueGetter<TItem>( Field ) );
-            valueSetter = new Lazy<Action<TItem, object>>( () => FunctionCompiler.CreateValueSetter<TItem>( Field ) );
+            valueTypeGetter = new Lazy<Func<Type>>( () => ValueType != null ? () => ValueType : FunctionCompiler.CreateValueTypeGetter<TItem>( Field ) );
+            defaultValueByType = new Lazy<Func<object>>( () => ValueDefaultGetter ?? FunctionCompiler.CreateDefaultValueByType<TItem>( Field ) );
+            valueGetter = new Lazy<Func<TItem, object>>( () => ValueGetter ?? FunctionCompiler.CreateValueGetter<TItem>( Field ) );
+            valueSetter = new Lazy<Action<TItem, object>>( () => ValueSetter ?? FunctionCompiler.CreateValueSetter<TItem>( Field ) );
         }
 
         #endregion
@@ -371,6 +371,11 @@ namespace Blazorise.DataGrid
         [Parameter]
         public Action<ValidatorEventArgs> Validator { get; set; }
 
+        [Parameter] public Func<TItem, object> ValueGetter { get; set; }
+        [Parameter] public Action<TItem, object> ValueSetter { get; set; }
+        [Parameter] public Type ValueType { get; set; }
+        [Parameter] public Func<object> ValueDefaultGetter { get; set; }
+        
         /// <summary>
         /// Forces validation to use regex pattern matching instead of default validator handler.
         /// </summary>
