@@ -2,6 +2,9 @@
 @inherits BaseComponent
 <div id="@ElementId" class="@ClassNames" style="@StyleNames" @attributes="@Attributes">
     <div class="@ContentClassNames">
-        @ChildContent
+        @if (Visible)
+        {
+            @ChildContent
+        }
     </div>
 </div>

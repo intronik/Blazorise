@@ -15,9 +15,11 @@ namespace Blazorise
     /// </summary>
     public partial class Button : BaseComponent
     {
+        public static Color DefaultColor = Color.Primary;
+
         #region Members
 
-        private Color color = Color.None;
+        private Color color = DefaultColor;
 
         private Size size = Size.None;
 

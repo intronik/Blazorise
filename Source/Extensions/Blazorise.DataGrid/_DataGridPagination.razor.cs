@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Blazorise.Localization;
 using Blazorise.Utilities;
 using Microsoft.AspNetCore.Components;
-using Blazorise.Utilities;
 #endregion
 
 namespace Blazorise.DataGrid

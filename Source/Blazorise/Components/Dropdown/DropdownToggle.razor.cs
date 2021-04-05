@@ -13,6 +13,8 @@ namespace Blazorise
     /// </summary>
     public partial class DropdownToggle : BaseComponent, ICloseActivator
     {
+        public static Color DefaultColor = Color.Primary;
+
         #region Members
 
         private bool split;
@@ -174,7 +176,7 @@ namespace Blazorise
         /// <summary>
         /// Gets or sets the dropdown color.
         /// </summary>
-        [Parameter] public Color Color { get; set; } = Color.None;
+        [Parameter] public Color Color { get; set; } = DefaultColor;
 
         /// <summary>
         /// Gets or sets the dropdown size.
