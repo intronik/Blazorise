@@ -206,7 +206,7 @@ namespace Blazorise.DataGrid
             }
         }
 
-        public bool ShowPageSizes { get; set; } = false;
+        public bool ShowPageSizes { get; set; } = true;
 
         public IEnumerable<int> PageSizes { get; set; } = new int[] { 5, 10, 25, 50, 100, 250 };
 

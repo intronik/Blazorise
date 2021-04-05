@@ -108,7 +108,6 @@ namespace Blazorise.DataGrid
             paginationTemplates = new PaginationTemplates<TItem>();
             paginationContext = new PaginationContext<TItem>( this );
         }
-
         #endregion
 
         #region Methods
@@ -1386,7 +1385,7 @@ namespace Blazorise.DataGrid
         /// <summary>
         /// Custom localizer handlers to override default <see cref="DataGrid{TItem}"/> localization.
         /// </summary>
-        [Parameter] public DataGridLocalizers Localizers { get; set; }
+        [Inject] public DataGridLocalizers Localizers { get; set; }
 
         /// <summary>
         /// Specifies the content to be rendered inside this <see cref="DataGrid{TItem}"/>.
