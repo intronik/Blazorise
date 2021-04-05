@@ -1,5 +1,7 @@
 ﻿window.blazoriseDataGrid = {
     initResizable: function (table, mode) {
+        if (table === undefined)
+            return;
         const resizerClass = "b-datagrid-resizer";
         const resizingClass = "b-datagrid-resizing";
         const resizerHeaderMode = 0;
