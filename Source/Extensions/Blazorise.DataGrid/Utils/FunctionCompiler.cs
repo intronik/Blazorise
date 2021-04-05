@@ -129,6 +129,8 @@ namespace Blazorise.DataGrid.Utils
 
         public static Func<TItem, object> CreateValueGetter<TItem>( string fieldName )
         {
+            if ( string.IsNullOrWhiteSpace( fieldName ) )
+                return item => (object)item;
             var item = Expression.Parameter( typeof( TItem ), "item" );
             var property = GetSafePropertyOrField( item, fieldName );
             return Expression.Lambda<Func<TItem, object>>( Expression.Convert( property, typeof( object ) ), item ).Compile();
@@ -136,6 +138,8 @@ namespace Blazorise.DataGrid.Utils
 
         public static Func<Type> CreateValueTypeGetter<TItem>( string fieldName )
         {
+            if ( string.IsNullOrWhiteSpace( fieldName ) )
+                return () => typeof(TItem);
             var item = Expression.Parameter( typeof( TItem ) );
             var property = GetField( item, fieldName );
             return Expression.Lambda<Func<Type>>( Expression.Constant( property.Type ) ).Compile();
@@ -143,6 +147,8 @@ namespace Blazorise.DataGrid.Utils
 
         public static Func<object> CreateDefaultValueByType<TItem>( string fieldName )
         {
+            if ( string.IsNullOrWhiteSpace( fieldName ) )
+                return () => default(TItem);
             var item = Expression.Parameter( typeof( TItem ) );
             var property = GetField( item, fieldName );
             return Expression.Lambda<Func<object>>( Expression.Convert( Expression.Default( property.Type ), typeof( object ) ) ).Compile();
@@ -150,6 +156,8 @@ namespace Blazorise.DataGrid.Utils
 
         public static Action<TItem, object> CreateValueSetter<TItem>( string fieldName )
         {
+            if ( string.IsNullOrWhiteSpace( fieldName ) )
+                return null;
             var item = Expression.Parameter( typeof( TItem ), "item" );
             var value = Expression.Parameter( typeof( object ), "value" );
 
