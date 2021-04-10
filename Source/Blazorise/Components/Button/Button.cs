@@ -1,4 +1,5 @@
 ﻿#region Using directives
+using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Blazorise.Extensions;
@@ -34,6 +35,12 @@ namespace Blazorise
         private bool loading;
 
         private DropdownState parentDropdownState;
+
+        private ICommand command;
+
+        private object commandParameter;
+
+        private bool? canExecuteCommand;
 
         #endregion
 
@@ -82,7 +89,7 @@ namespace Blazorise
         protected virtual RenderFragment ProvideDefaultLoadingTemplate() => null;
 
         /// <inheritdoc/>
-        protected override void Dispose( bool disposing )
+        protected override async ValueTask DisposeAsync( bool disposing )
         {
             if ( disposing )
             {
@@ -92,11 +99,28 @@ namespace Blazorise
 
                 if ( Rendered )
                 {
-                    JSRunner.DestroyButton( ElementId );
+                    var task = JSRunner.DestroyButton( ElementId );
+
+                    try
+                    {
+                        await task;
+                    }
+                    catch
+                    {
+                        if ( !task.IsCanceled )
+                        {
+                            throw;
+                        }
+                    }
+                }
+
+                if ( command != null )
+                {
+                    command.CanExecuteChanged -= OnCanExecuteChanged;
                 }
             }
 
-            base.Dispose( disposing );
+            await base.DisposeAsync( disposing );
         }
 
         /// <summary>
@@ -109,10 +133,8 @@ namespace Blazorise
             {
                 await Clicked.InvokeAsync( null );
 
-                if ( Command?.CanExecute( CommandParameter ) ?? false )
-                {
-                    Command.Execute( CommandParameter );
-                }
+                // Don't need to check CanExecute again is already part of Disabled check
+                Command?.Execute( CommandParameter );
             }
         }
 
@@ -137,17 +159,16 @@ namespace Blazorise
                 .AriaPressed( Active )
                 .TabIndex( TabIndex );
 
-            if ( Type == ButtonType.Link && To != null )
+            if ( Type == ButtonType.Link )
             {
                 builder
                     .Role( "button" )
                     .Href( To )
                     .Target( Target );
             }
-            else
-            {
-                builder.OnClick( this, EventCallback.Factory.Create( this, ClickHandler ) );
-            }
+
+            builder.OnClick( this, EventCallback.Factory.Create( this, ClickHandler ) );
+            builder.OnClickPreventDefault( Type == ButtonType.Link && To != null && To.StartsWith( "#" ) );
 
             builder.Attributes( Attributes );
             builder.ElementReferenceCapture( capturedRef => ElementRef = capturedRef );
@@ -164,6 +185,42 @@ namespace Blazorise
             builder.CloseElement();
 
             base.BuildRenderTree( builder );
+        }
+
+        private void BindCommand( ICommand value )
+        {
+            if ( command != null )
+            {
+                command.CanExecuteChanged -= OnCanExecuteChanged;
+            }
+
+            command = value;
+
+            if ( command != null )
+            {
+                command.CanExecuteChanged += OnCanExecuteChanged;
+            }
+
+            OnCanExecuteChanged( value, EventArgs.Empty );
+        }
+
+        protected virtual void OnCanExecuteChanged( object sender, EventArgs e )
+        {
+            var canExecute = Command?.CanExecute( CommandParameter );
+
+            if ( canExecute != canExecuteCommand )
+            {
+                canExecuteCommand = canExecute;
+
+                if ( Rendered )
+                {
+                    // in case some provider is using Disabled flag for custom styles
+                    DirtyStyles();
+                    DirtyClasses();
+
+                    InvokeAsync( StateHasChanged );
+                }
+            }
         }
 
         #endregion
@@ -249,7 +306,7 @@ namespace Blazorise
         [Parameter]
         public bool Disabled
         {
-            get => disabled;
+            get => disabled || !canExecuteCommand.GetValueOrDefault( true );
             set
             {
                 disabled = value;
@@ -354,12 +411,30 @@ namespace Blazorise
         /// <summary>
         /// Gets or sets the command to be executed when clicked on a button.
         /// </summary>
-        [Parameter] public ICommand Command { get; set; }
+        [Parameter]
+        public ICommand Command
+        {
+            get => command;
+            set => BindCommand( value );
+        }
 
         /// <summary>
         /// Reflects the parameter to pass to the CommandProperty upon execution.
         /// </summary>
-        [Parameter] public object CommandParameter { get; set; }
+        [Parameter]
+        public object CommandParameter
+        {
+            get => commandParameter;
+            set
+            {
+                if ( commandParameter.IsEqual( value ) )
+                    return;
+
+                commandParameter = value;
+
+                OnCanExecuteChanged( this, EventArgs.Empty );
+            }
+        }
 
         /// <summary>
         /// Denotes the target route of the <see cref="ButtonType.Link"/> button.

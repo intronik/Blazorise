@@ -5,25 +5,35 @@
         const resizerClass = "b-datagrid-resizer";
         const resizingClass = "b-datagrid-resizing";
         const resizerHeaderMode = 0;
+        let cols = null;
 
-        const cols = table.querySelectorAll('tr:first-child > th');
+        if (table !== null) {
+            cols = table.querySelectorAll('tr:first-child > th');
+        }
+
         if (cols !== null) {
 
             const calculateTableActualHeight = function () {
                 let height = 0;
-                const tableRows = table.querySelectorAll('tr');
+                if (table !== null) {
+                    const tableRows = table.querySelectorAll('tr');
 
-                tableRows.forEach(x => {
-                    let firstCol = x.querySelector('th:first-child,td:first-child');
-                    if (firstCol !== null) {
-                        height += firstCol.offsetHeight;
-                    }
-                });
+                    tableRows.forEach(x => {
+                        let firstCol = x.querySelector('th:first-child,td:first-child');
+                        if (firstCol !== null) {
+                            height += firstCol.offsetHeight;
+                        }
+                    });
+                }
                 return height;
             };
 
             const calculateModeHeight = () => {
-                return mode === resizerHeaderMode ? table.querySelector('tr:first-child > th:first-child').offsetHeight : calculateTableActualHeight();
+                return mode === resizerHeaderMode
+                    ? table !== null
+                        ? table.querySelector('tr:first-child > th:first-child').offsetHeight
+                        : 0
+                    : calculateTableActualHeight();
             };
 
             let actualHeight = calculateModeHeight();
@@ -78,8 +88,6 @@
                 const mouseDownHandler = function (e) {
                     mouseDownDate = new Date();
 
-                    cols.forEach(x => x.classList.add('b-datagrid-resizing'));
-
                     // Get the current mouse position
                     x = e.clientX;
 
@@ -108,8 +116,6 @@
                 const mouseUpHandler = function () {
                     mouseUpDate = new Date();
 
-                    cols.forEach(x => x.classList.remove('b-datagrid-resizing'));
-
                     resizer.classList.remove(resizingClass);
 
                     table.querySelectorAll(`.${resizerClass}`).forEach(x => x.style.height = `${calculateModeHeight()}px`);
@@ -128,6 +134,8 @@
         }
     },
     destroyResizable: function (table) {
-        table.querySelectorAll('.b-datagrid-resizer').forEach(x => x.remove());
+        if (table !== null) {
+            table.querySelectorAll('.b-datagrid-resizer').forEach(x => x.remove());
+        }
     }
 }; 

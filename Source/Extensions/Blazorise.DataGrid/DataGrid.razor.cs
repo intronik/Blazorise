@@ -13,7 +13,7 @@ using Microsoft.JSInterop;
 
 namespace Blazorise.DataGrid
 {
-    public partial class DataGrid<TItem> : BaseDataGridComponent, IDisposable
+    public partial class DataGrid<TItem> : BaseDataGridComponent
     {
         #region Members
 
@@ -137,7 +137,7 @@ namespace Blazorise.DataGrid
         /// <summary>
         /// Links the child column with this datagrid.
         /// </summary>
-        /// <param name="column">Column to link with this datagrid.</param>
+        /// <param name="aggregate">Aggregate column to link with this datagrid.</param>
         internal void Hook( DataGridAggregate<TItem> aggregate )
         {
             Aggregates.Add( aggregate );
@@ -175,7 +175,7 @@ namespace Blazorise.DataGrid
                 paginationContext.UnsubscribeOnPageSizeChanged( OnPageSizeChanged );
                 paginationContext.UnsubscribeOnPageChanged( OnPageChanged );
 
-                base.Dispose();
+                base.Dispose( disposing );
             }
         }
 
@@ -1378,9 +1378,14 @@ namespace Blazorise.DataGrid
         [Parameter] public bool ShowValidationsSummary { get; set; } = true;
 
         /// <summary>
-        /// Label for validaitons summary.
+        /// Label for validations summary.
         /// </summary>
         [Parameter] public string ValidationsSummaryLabel { get; set; }
+
+        /// <summary>
+        /// List of custom error messages for the validations summary.
+        /// </summary>
+        [Parameter] public string[] ValidationsSummaryErrors { get; set; }
 
         /// <summary>
         /// Custom localizer handlers to override default <see cref="DataGrid{TItem}"/> localization.

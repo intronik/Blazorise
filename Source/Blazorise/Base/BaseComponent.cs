@@ -1,5 +1,4 @@
 ﻿#region Using directives
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Blazorise.Base;
@@ -10,7 +9,7 @@ using Microsoft.JSInterop;
 
 namespace Blazorise
 {
-    public abstract class BaseComponent : BaseAfterRenderComponent, IDisposable
+    public abstract class BaseComponent : BaseAfterRenderComponent
     {
         #region Members
 
@@ -25,6 +24,8 @@ namespace Blazorise
         private IFluentSpacing padding;
 
         private IFluentDisplay display;
+
+        private IFluentBorder border;
 
         private CharacterCasing characterCasing = CharacterCasing.Normal;
 
@@ -86,6 +87,9 @@ namespace Blazorise
 
             if ( Display != null )
                 builder.Append( Display.Class( ClassProvider ) );
+
+            if ( Border != null )
+                builder.Append( Border.Class( ClassProvider ) );
 
             if ( Float != Float.None )
                 builder.Append( ClassProvider.ToFloat( Float ) );
@@ -283,6 +287,21 @@ namespace Blazorise
             set
             {
                 display = value;
+
+                DirtyClasses();
+            }
+        }
+
+        /// <summary>
+        /// Specifies the border of an element.
+        /// </summary>
+        [Parameter]
+        public IFluentBorder Border
+        {
+            get => border;
+            set
+            {
+                border = value;
 
                 DirtyClasses();
             }

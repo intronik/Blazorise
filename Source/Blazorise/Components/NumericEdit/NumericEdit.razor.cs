@@ -30,12 +30,22 @@ namespace Blazorise
         /// <inheritdoc/>
         public override async Task SetParametersAsync( ParameterView parameters )
         {
+            var decimalsChanged = parameters.TryGetValue( nameof( Decimals ), out int decimals ) && !Decimals.IsEqual( decimals );
+
+            if ( Rendered && decimalsChanged )
+            {
+                ExecuteAfterRender( async () => await JSRunner.UpdateNumericEdit( ElementRef, ElementId, new
+                {
+                    Decimals = new { Changed = decimalsChanged, Value = decimals },
+                } ) );
+            }
+
             await base.SetParametersAsync( parameters );
 
             if ( ParentValidation != null )
             {
                 if ( parameters.TryGetValue<Expression<Func<TValue>>>( nameof( ValueExpression ), out var expression ) )
-                    ParentValidation.InitializeInputExpression( expression );
+                    await ParentValidation.InitializeInputExpression( expression );
 
                 if ( parameters.TryGetValue<string>( nameof( Pattern ), out var pattern ) )
                 {
@@ -44,10 +54,10 @@ namespace Blazorise
                         ? inValue
                         : InternalValue;
 
-                    ParentValidation.InitializeInputPattern( pattern, value );
+                    await ParentValidation.InitializeInputPattern( pattern, value );
                 }
 
-                InitializeValidation();
+                await InitializeValidation();
             }
         }
 
@@ -56,21 +66,44 @@ namespace Blazorise
         {
             dotNetObjectRef ??= CreateDotNetObjectRef( new NumericEditAdapter( this ) );
 
-            await JSRunner.InitializeNumericEdit( dotNetObjectRef, ElementRef, ElementId, Decimals, DecimalsSeparator, Step, Min, Max );
+            // find the min and max possible value based on the supplied value type
+            var (minFromType, maxFromType) = Converters.GetMinMaxValueOfType<TValue>();
+
+            await JSRunner.InitializeNumericEdit<TValue>( dotNetObjectRef, ElementRef, ElementId, new
+            {
+                Decimals = Decimals,
+                Separator = DecimalsSeparator,
+                Step,
+                Min = Min.IsEqual( default ) ? minFromType : Min,
+                Max = Max.IsEqual( default ) ? maxFromType : Max
+            } );
 
             await base.OnFirstAfterRenderAsync();
         }
 
         /// <inheritdoc/>
-        protected override void Dispose( bool disposing )
+        protected override async ValueTask DisposeAsync( bool disposing )
         {
             if ( disposing && Rendered )
             {
-                JSRunner.DestroyNumericEdit( ElementRef, ElementId );
+                var task = JSRunner.DestroyNumericEdit( ElementRef, ElementId );
+
+                try
+                {
+                    await task;
+                }
+                catch
+                {
+                    if ( !task.IsCanceled )
+                    {
+                        throw;
+                    }
+                }
+
                 DisposeDotNetObjectRef( dotNetObjectRef );
             }
 
-            base.Dispose( disposing );
+            await base.DisposeAsync( disposing );
         }
 
         /// <inheritdoc/>
@@ -258,9 +291,8 @@ namespace Blazorise
         [Parameter] public TValue Max { get; set; }
 
         /// <summary>
-        /// The size attribute specifies the visible width, in characters, of an <input> element.
+        /// The size attribute specifies the visible width, in characters, of an input element. https://www.w3schools.com/tags/att_input_size.asp
         /// </summary>
-        /// <see cref="https://www.w3schools.com/tags/att_input_size.asp"/>
         [Parameter] public int? VisibleCharacters { get; set; }
 
         #endregion

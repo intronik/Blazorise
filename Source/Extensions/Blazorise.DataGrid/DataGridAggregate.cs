@@ -126,8 +126,8 @@ namespace Blazorise.DataGrid
         /// <summary>
         /// Gets the formated display value.
         /// </summary>
-        /// <param name="item">Item the contains the value to format.</param>
-        /// <returns></returns>
+        /// <param name="value">Item the contains the value to format.</param>
+        /// <returns>Formated display value.</returns>
         internal string FormatDisplayValue( object value )
         {
             if ( DisplayFormat != null )

@@ -1,6 +1,7 @@
 ﻿#region Using directives
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 #endregion
 
@@ -19,6 +20,13 @@ namespace Blazorise.AntDesign
             sb.Append( $".ant-hero-{variant}" ).Append( "{" )
                 .Append( $"background-color: {Var( ThemeVariables.BackgroundColor( variant ) )} !important;" )
                 .Append( $"color: {ToHex( Contrast( theme, Var( ThemeVariables.BackgroundColor( variant ) ) ) )} !important;" )
+                .AppendLine( "}" );
+        }
+
+        protected override void GenerateBorderVariantStyles( StringBuilder sb, Theme theme, string variant )
+        {
+            sb.Append( $".ant-border-{variant}" ).Append( "{" )
+                .Append( $"border-color: {Var( ThemeVariables.BackgroundColor( variant ) )} !important;" )
                 .AppendLine( "}" );
         }
 
@@ -422,6 +430,12 @@ namespace Blazorise.AntDesign
                 .Append( $".ant-steps-item.ant-steps-item-active.ant-steps-item-process.ant-steps-item-finish .ant-steps-item-icon .ant-steps-icon" ).Append( "{" )
                 .Append( $"color: {Var( ThemeVariables.StepsItemIconActiveYiq, Var( ThemeVariables.White ) )};" )
                 .AppendLine( "}" );
+
+            sb
+                .Append( $".ant-steps-item.ant-steps-item-active.ant-steps-item-process .ant-steps-item-icon" ).Append( "{" )
+                .Append( $"background: {Var( ThemeVariables.StepsItemIconActive, Var( ThemeVariables.Color( "primary" ) ) )};" )
+                .Append( $"border-color: {Var( ThemeVariables.StepsItemIconActive, Var( ThemeVariables.Color( "primary" ) ) )};" )
+                .AppendLine( "}" );
         }
 
         protected override void GenerateStepsVariantStyles( StringBuilder sb, Theme theme, string variant, string inBackgroundColor, ThemeStepsOptions stepsOptions )
@@ -473,6 +487,25 @@ namespace Blazorise.AntDesign
             sb
                 .Append( $".ant-steps-item-{variant} .ant-steps-item-content .ant-steps-item-title" ).Append( "{" )
                 .Append( $"color: {Var( ThemeVariables.VariantStepsItemText( variant ) )};" )
+                .AppendLine( "}" );
+        }
+
+        protected override void GenerateRatingStyles( StringBuilder sb, Theme theme, ThemeRatingOptions ratingOptions )
+        {
+            if ( ratingOptions?.HoverOpacity != null )
+            {
+                sb
+                    .Append( $".ant-rate .ant-rate-star.ant-rate-star-focused" ).Append( "{" )
+                    .Append( $"opacity: {string.Format( CultureInfo.InvariantCulture, "{0:F1}", ratingOptions.HoverOpacity )};" )
+                    .AppendLine( "}" );
+            }
+        }
+
+        protected override void GenerateRatingVariantStyles( StringBuilder sb, Theme theme, string variant, string inBackgroundColor, ThemeRatingOptions ratingOptions )
+        {
+            sb
+                .Append( $".ant-rate .ant-rate-star.ant-rate-star-{variant}" ).Append( "{" )
+                .Append( $"color: {Var( ThemeVariables.VariantRatingColor( variant ) )};" )
                 .AppendLine( "}" );
         }
 
